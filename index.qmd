@@ -11,8 +11,9 @@ theme: custom.scss
 library(sf)
 mapview::mapviewOptions(default = TRUE,
                         basemaps.color.shuffle = FALSE)
-load("~/Dropbox/hotspots_vector_2024/8.RData/eggs/11_guanajuato/eggs_betas_11_guanajuato.RData")
 ```
+
+
 
 
 
@@ -20,11 +21,11 @@ load("~/Dropbox/hotspots_vector_2024/8.RData/eggs/11_guanajuato/eggs_betas_11_gu
 
 ::: panel-tabset
 
+
 ### [**Cuernavaca**]{style="color:#990000"}
 
 <html>
 <head>
-
 ```{=html}
 <style>
 body {
@@ -35,9 +36,9 @@ body {
 
 .wrapper {
     display: grid;
-    grid-gap: 2px;
-    grid-template-columns: 220px 220px 220px 550px;
-    grid-template-rows: 160px 160px 160px 160px;
+    grid-gap: 1px;
+    grid-template-columns: 225px 225px 225px 410px;
+    grid-template-rows: 95px 95px 95px 130px;
     background-color: #772953;
     color: "#772953";
   }
@@ -45,10 +46,9 @@ body {
   .box {
     background-color: #772953;
     color: "#772953";
-    border-radius: 2px;
-    padding: 5px;
+    border-radius: 1px;
+    padding: 2px;
     font-size: 100%;
-
   }
 
   .a {
@@ -78,66 +78,71 @@ body {
 </style>
 ```
 </head>
-
 <body>
-
 ::: wrapper
 ::: {.box .a}
 ```{r hotspots_dengue_cuernavaca}
-# Step 1. extract the localidty
-loc <- rgeomex::extract_locality(locality = c("Cuernavaca",
+# Step 1. extract the locality ####
+loc <- rgeomex::extract_locality(cve_edo = "17", 
+                                 locality = c("Cuernavaca",
                                                      "Emiliano Zapata",
                                                      "Jiutepec",
                                                      "Temixco",
-                                                     "Xochitepec"), 
-                                 cve_edo = "17")
+                                                     "Xochitepec"))
 
-# Step 2. extract the locality ####
-hotspots <- hotspotsdata::hotspots_hex[loc, ]
-
-# Step 3- Interactive Map ####
-pal <- rcartocolor::carto_pal(n = max(hotspots$intensity_gi), 
-                              name = "OrYel")
+# Step 2. Extract the hotspots ####
+hotspots <- hotspotsdata::den_hotspots[loc, ]
 mapview::mapview(hotspots,
                  zcol = "intensity_gi",
                  layer.name = "Intensidad",
                  label = FALSE,
                  color = "white",
                  lwd = 0.5, 
-                 col.regions = pal)
+                 col.regions =  rcartocolor::carto_pal(n = max(hotspots$intensity_gi), 
+                                                       name = "OrYel"))
 
 ```
 :::
 
 ::: {.box .b}
-```{r forest_plot_leon, dpi = 300, fig.height= 5,fig.width = 7,fig.align = "center", out.height='100%', out.width = '100%',fig.show = "hold"}
+```{r forest_plot_cuernavaca, dpi = 300, fig.height= 5,fig.width = 7,fig.align = "center", out.height='100%', out.width = '100%',fig.show = "hold"}
  
 # Logistic Regression
 hotspots <- hotspots |>
     dplyr::mutate(DENV_2008_2010 = DENV_2008 + DENV_2009 + DENV_2010) |>
-    plyr::mutate(DENV_2011_2014 = DENV_2011 + DENV_2012 + DENV_2013 + DENV_2014) |>
+    dplyr::mutate(DENV_2011_2014 = DENV_2011 + DENV_2012 + DENV_2013 + DENV_2014) |>
     dplyr::mutate(DENV_2015_2017 = DENV_2015 +  DENV_2016 + DENV_2017) |>
     dplyr::mutate(DENV_2018_2019 = DENV_2018 +  DENV_2019) |>
-    dplyr::mutate(DENV_2020_2021 = DENV_2020 +  DENV_2021) |>
-    dplyr::mutate(DENV_2022_2023 = DENV_2022 +  DENV_2023) 
+    dplyr::mutate(DENV_2020_2022 = DENV_2020 +  DENV_2021 + DENV_2022) |>
+    dplyr::mutate(DENV_2023_2024 = DENV_2023 +  DENV_2024) 
 
 
 # Logistic Regression
 glm.fit <- glm(hotspots_gi~DENV_2008_2010 + DENV_2011_2014 +
                    DENV_2015_2017 + DENV_2018_2019 +
-                   DENV_2020_2021 + DENV_2022_2023,
+                   DENV_2020_2022 + DENV_2023_2024,
                data = hotspots, 
                family = binomial)
 
 result <- parameters::model_parameters(glm.fit, 
-                                       exponentiate = TRUE)
+                                       exponentiate = FALSE)
 
-plotly::ggplotly(plot(result, size_text = 1))
+plotly::ggplotly(plot(result) +
+       ggplot2::theme(axis.text.y = ggplot2::element_text(size = 8),
+                       axis.text.x = ggplot2::element_text(size = 8),
+                       axis.title = ggplot2::element_text(size = 8),
+                      plot.margin = ggplot2::unit(c(0,0,0,0), "cm")) +
+        ggplot2::scale_y_discrete(labels = c("2008-2010",
+                                             "2011-2014", 
+                                             "2015-2017",
+                                             "2018-2019",
+                                             "2020-2022",
+                                             "2023-2024")))
 ```
 :::
 
 ::: {.box .c}
-```{r power_law_plot_leon,dpi = 300, warning=FALSE, fig.align = "center", out.width = '100%',out.height='100%',fig.show = "hold"}
+```{r power_law_plot_cuernavaca,dpi = 300, warning=FALSE, fig.align = "center", out.width = '100%',out.height='100%',fig.show = "hold"}
 # Step 7. make the function por calculate the cumulative ####
 funcumsum <- function(x){
     x$cumulative_n <- cumsum(x$n_cases)
@@ -169,13 +174,23 @@ data_pareto <- hotspots   |>
     tidyr::unnest(cols = c(pareto_cases))
 
 # step 4. visualization of pareto rules 
-plotly::ggplotly(denhotspots::power_law_plot(x = data_pareto))  |> plotly::layout(showlegend = FALSE)
+plotly::ggplotly(denhotspots::power_law_plot(x = data_pareto) +
+                  ggplot2::theme(axis.text.y = ggplot2::element_text(size = 8),
+                                 axis.text.x = ggplot2::element_text(size = 8),
+                       axis.title = ggplot2::element_text(size = 8),
+                      plot.margin = ggplot2::unit(c(0,0,0,0), "cm")))  |> 
+  plotly::layout(showlegend = FALSE)
+
+
+
+
+
 
 ```
 :::
 
 ::: {.box .d}
-```{r gauge_blocks_leon,fig.align = "center", out.height='100%', out.width = '100%', fig.width= 1.5, fig.height=1}
+```{r gauge_blocks_cuernavaca,fig.align = "center", out.height='90%', out.width = '90%'}
 y_hot <- hotspots |> dplyr::filter(hotspots_gi == 1)
 centroid <- rgeomex::blocks_ine20_mx_centroid |>
   sf::st_as_sf(coords = c("x", "y"), crs = 4326)
@@ -195,7 +210,7 @@ flexdashboard::gauge(round((nrow(b_hot)/nrow(b_loc))*100, digits = 1),
 :::
 
 ::: {.box .e}
-```{r gauge_AGEB_leon, fig.align = "center", out.height='100%', out.width = '100%'}
+```{r gauge_AGEB_cuernavaca, fig.align = "center", out.height='90%', out.width = '90%'}
 
 y <- hotspots  |>
     sf::st_drop_geometry() |>
@@ -207,7 +222,7 @@ y_hot <- y |>dplyr::filter(hotspots_gi == 1)
 flexdashboard::gauge(round((nrow(y_hot)/nrow(y))*100, digits = 1),
       min = 0, max = 100, 
       symbol = '%', 
-      label = "Hexágonos",
+      label = "AGEBs",
       flexdashboard::gaugeSectors(success = c(0, 30), 
                                   warning = c(31, 50), 
                                   danger = c(51, 100),
@@ -218,7 +233,7 @@ flexdashboard::gauge(round((nrow(y_hot)/nrow(y))*100, digits = 1),
 :::
 
 ::: {.box .f}
-```{r gauge_casos_leon, out.height='90%', out.width = '90%', fig.align = "center"}
+```{r gauge_casos_cuernavaca, out.height='90%', out.width = '90%', fig.align = "center"}
 
 y <- hotspots  |>
     sf::st_drop_geometry() |>
@@ -240,10 +255,10 @@ flexdashboard::gauge(round((sum(y_hot$n_cases)/sum(y$n_cases))*100, digits = 1),
 ```
 :::
 :::
-
 </body>
-
 </html>
+
+
 
 
 :::
